@@ -56,8 +56,6 @@ namespace GigE_Cam_Simulator
             });
 
             server.Run();
-
-            Console.WriteLine("Camera Server is running...");
             Console.ReadLine();
         }
     }

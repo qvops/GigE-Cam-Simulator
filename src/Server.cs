@@ -12,6 +12,7 @@
     internal class Server
     {
         private static readonly int CONTROL_PORT = 3956;
+        private static object lockObject = new object();
 
         string Address { get; set; }
 
@@ -169,11 +170,19 @@
         }
 
         public void Run()
-        {
-            this.server = new UdpClient();
-            this.server.Client.Bind(new IPEndPoint(IPAddress.Any, Server.CONTROL_PORT));
-            this.server.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            this.server.BeginReceive(new AsyncCallback(this.IncommingMessage), this.server);
+        {   
+            lock(lockObject) {
+                this.server = new UdpClient();
+                this.server.Client.Bind(new IPEndPoint(IPAddress.Any, Server.CONTROL_PORT));
+                this.server.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                this.server.BeginReceive(new AsyncCallback(this.IncommingMessage), this.server);
+                Console.WriteLine("Camera Server is running...");
+                while (true){
+                    Thread.Sleep(1000);
+                }
+                // Console.ReadLine();
+            
+            }
         }
 
 
