@@ -43,7 +43,7 @@ namespace GigE_Cam_Simulator
             });
 
             var imageData = new ImageData[13];
-            for (int i = 0; i < 13; i++)
+            for (int i = 0; i < 5; i++)
             {
                 imageData[i] = ImageData.FormFile(Path.Combine(path, "left" + i.ToString().PadLeft(2, '0') + ".jpg"));
             }
