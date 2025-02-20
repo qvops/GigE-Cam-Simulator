@@ -15,6 +15,8 @@ namespace GigE_Cam_Simulator
 
             var server = new Server(cameraXml, preSetMemory);
 
+            var photoArrayLength = 5;
+
 
             server.OnRegisterChanged(RegisterTypes.Stream_Channel_Packet_Size_0, (mem) =>
             {
@@ -42,17 +44,16 @@ namespace GigE_Cam_Simulator
                 }
             });
 
-            var imageData = new ImageData[13];
-            for (int i = 0; i < 5; i++)
+            var imageData = new ImageData[photoArrayLength];
+            for (int i = 0; i < photoArrayLength; i++)
             {
                 imageData[i] = ImageData.FormFile(Path.Combine(path, "left" + i.ToString().PadLeft(2, '0') + ".jpg"));
             }
 
-            var imageIndex = 0;
             server.OnAcquiesceImage(() =>
             {
-                imageIndex++;
-                return imageData[imageIndex % 13];
+                int randomIndex = random.Next(0, 5);
+                return imageData[randomIndex];
             });
 
             server.Run();
