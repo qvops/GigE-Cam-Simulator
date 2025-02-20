@@ -1,19 +1,19 @@
 <memory>
 	<property>
 		<register>Manufacturer_name</register>
-		<string>Example.ORG</string>
+		<string>VaroCam SLU</string>
 	</property>
 	<property>
 		<register>Model_name</register>
-		<string>gige sim</string>
+		<string>LidarCam Omega Blast</string>
 	</property>
 	<property>
 		<register>Device_version</register>
-		<string>v0.1.2</string>
+		<string>v1.0.0</string>
 	</property>
 	<property>
 		<register>Manufacturer_specific_information</register>
-		<string>my fake cam</string>
+		<string>The best ***king camera</string>
 	</property>
 	<property>
 		<register>Serial_number</register>
@@ -21,7 +21,7 @@
 	</property>
 	<property>
 		<register>User_defined_name</register>
-		<string>The quick brown fox jumps over a lazy dog</string>
+		<string>This is the best cam the money can buy</string>
 	</property>
 	<property>
 		<register>XML_Device_Description_File_Second_URL</register>
