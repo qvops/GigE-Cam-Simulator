@@ -52,7 +52,7 @@ namespace GigE_Cam_Simulator
 
             server.OnAcquiesceImage(() =>
             {
-                int randomIndex = random.Next(0, 5);
+                int randomIndex = random.Next(0, photoArrayLength);
                 return imageData[randomIndex];
             });
 
