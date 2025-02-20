@@ -2,6 +2,15 @@
 
 This is a GigE camera simulator written in C#.
 
+## How to run
+- First install Dotnet 9.0
+- Then run the following commands from project's root folder:
+```bash
+git clone git@github.com:qvops/GigE-Cam-Simulator.git
+cd GigE-Cam-Simulator
+dotnet run --project src
+```
+
 ## Functions:
 - Discover: answering discovery requests
 - Software Trigger: Provide images for software trigger requests.
@@ -21,8 +30,6 @@ When the client writes to register 0x30c, an image is sent to the client.
 ## Specification
 see:
 https://www.visiononline.org/userAssets/aiaUploads/File/GigE_Vision_Specification_2-0-03.pdf
-
-
 
 ## Inspired by
 - [Aravis](https://github.com/AravisProject/aravis)
