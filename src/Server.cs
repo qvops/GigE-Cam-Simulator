@@ -264,6 +264,9 @@
 
         private void OnAcquisitionCallback(object source)
         {
+            //TODO Provide a parametric way to simulate camera FPS from the given
+            // genicam register. Now locked at 10fps
+            int sleepTimeBetweenImages = 100;
             if (this.onAcquiesceImageCallback == null)
             {
                 return;
@@ -284,7 +287,7 @@
 
 
             Console.WriteLine("--- << send Image: end");
-
+            Thread.Sleep(100);
             return;
 
             // enqueue next call
