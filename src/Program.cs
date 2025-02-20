@@ -50,6 +50,7 @@ namespace GigE_Cam_Simulator
                 imageData[i] = ImageData.FormFile(Path.Combine(path, "left" + i.ToString().PadLeft(2, '0') + ".jpg"));
             }
 
+            var random = new Random();
             server.OnAcquiesceImage(() =>
             {
                 int randomIndex = random.Next(0, photoArrayLength);
