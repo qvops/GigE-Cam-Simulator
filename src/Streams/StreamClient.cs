@@ -18,8 +18,11 @@
 
             var endpoint = new IPEndPoint(ip, (int)port);
 
-            Console.WriteLine("--- send: Lead to " + endpoint);
-
+            Console.WriteLine($"======= Sending Image =======");
+            Console.WriteLine($"Image dimensions: {data.Width}x{data.Height}");
+            Console.WriteLine($"Raw data length: {data.Data.Length} bytes");
+            Console.WriteLine($"Expected data length: {data.Width * data.Height} bytes");
+            
             // send Lead
             var lead = new DataLeader_ImageData(blockId, PixelFormat.GVSP_PIX_MONO8, (uint)data.Width, (uint)data.Height);
             var leadPackage = lead.ToBuffer();
@@ -53,7 +56,7 @@
                 packetId++;
             }
 
-            Console.WriteLine("--- send: trailer");
+            Console.WriteLine($"--- send: trailer (sent {offset} bytes in {packetId-1} packets)");
 
             // send trailer
             var trailer = new DataTrailer_ImageData(blockId, (uint)packetId, (uint)data.Height);
