@@ -22,6 +22,8 @@
             Console.WriteLine($"Image dimensions: {data.Width}x{data.Height}");
             Console.WriteLine($"Raw data length: {data.Data.Length} bytes");
             Console.WriteLine($"Expected data length: {data.Width * data.Height} bytes");
+            Console.WriteLine($"Packet size: {packetSize} bytes");
+            Console.WriteLine($"=============================");
             
             // send Lead
             var lead = new DataLeader_ImageData(blockId, PixelFormat.GVSP_PIX_MONO8, (uint)data.Width, (uint)data.Height);
