@@ -23,6 +23,8 @@
 
     public enum PixelFormat
     {
+        // 3D Coordinates. TODO: Need to validate bytes
+        GVSP_PIX_COORD3D_ABC32f = (GVSP_PIX.MONO | GVSP_PIX_OCCUPY.OCCUPY32BIT | 0x00C0),
         // 27.1 Mono buffer format defines
         GVSP_PIX_MONO1P = (GVSP_PIX.MONO | GVSP_PIX_OCCUPY.OCCUPY1BIT | 0x0037),
         GVSP_PIX_MONO2P = (GVSP_PIX.MONO | GVSP_PIX_OCCUPY.OCCUPY2BIT | 0x0038),
