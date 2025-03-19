@@ -287,7 +287,7 @@
 
 
             Console.WriteLine("--- << send Image: end");
-            Thread.Sleep(100);
+            Thread.Sleep(sleepTimeBetweenImages);
             return;
 
             // enqueue next call
