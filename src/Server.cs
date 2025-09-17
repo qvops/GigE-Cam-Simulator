@@ -96,7 +96,33 @@
 
         private bool IsDirectAddress(IPEndPoint endpoint)
         {
-            return endpoint.Address.Equals(((IPEndPoint)server.Client.LocalEndPoint).Address);
+            // Get our interface IP for comparison
+            var ourIP = this.GetIpInfo()?.Address;
+            if (ourIP == null) return false;
+            
+            return endpoint.Address.Equals(ourIP);
+        }
+
+        private bool ShouldRespondToDiscovery(IPEndPoint senderEndpoint)
+        {
+            // For discovery packets, check if the sender is on our network
+            var ourIpInfo = this.GetIpInfo();
+            if (ourIpInfo?.Address == null) return false;
+            
+            // Check if sender is on the same subnet as our interface
+            var ourNetwork = ourIpInfo.Address.GetAddressBytes();
+            var ourMask = ourIpInfo.IPv4Mask.GetAddressBytes();
+            var senderBytes = senderEndpoint.Address.GetAddressBytes();
+            
+            // Apply subnet mask to both addresses and compare
+            for (int i = 0; i < 4; i++)
+            {
+                if ((ourNetwork[i] & ourMask[i]) != (senderBytes[i] & ourMask[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private string PadTo(string s)
@@ -121,13 +147,20 @@
             var command = (PackageCommandType)msg.ReadWordBE();
 
             // check if Endpoint fits - we only response to requests directed to us
-            if (command != PackageCommandType.DISCOVERY_CMD && IsDirectAddress(endpoint)) 
+            if (command != PackageCommandType.DISCOVERY_CMD && !IsDirectAddress(endpoint)) 
+            {
+                server.BeginReceive(new AsyncCallback(this.IncommingMessage), server);
+                return;
+            }
+            
+            // For discovery packets, only respond if sender is on our network
+            if (command == PackageCommandType.DISCOVERY_CMD && !ShouldRespondToDiscovery(endpoint))
             {
                 server.BeginReceive(new AsyncCallback(this.IncommingMessage), server);
                 return;
             }
 
-            var length = msg.ReadWordBE();
+            var length = msg    .ReadWordBE();
             var req_id = msg.ReadWordBE();
             var data = new BufferReader(msg.ReadBytes((int)length));
 
@@ -172,11 +205,20 @@
         public void Run()
         {   
             lock(lockObject) {
+                var ipInfo = this.GetIpInfo();
+                var bindAddress = ipInfo?.Address ?? IPAddress.Any;
+                
                 this.server = new UdpClient();
-                this.server.Client.Bind(new IPEndPoint(IPAddress.Any, Server.CONTROL_PORT));
+                
+                // Enable broadcast reception for discovery packets
+                this.server.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
                 this.server.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                
+                // Bind to any address to receive broadcasts, but filter responses to our interface
+                this.server.Client.Bind(new IPEndPoint(IPAddress.Any, Server.CONTROL_PORT));
+                
                 this.server.BeginReceive(new AsyncCallback(this.IncommingMessage), this.server);
-                Console.WriteLine("Camera Server is running...");
+                Console.WriteLine($"Camera Server is running on interface {this.iface.Name} ({bindAddress}):{Server.CONTROL_PORT}...");
                 while (true){
                     Thread.Sleep(1000);
                 }
@@ -212,29 +254,72 @@
         private void GetAllNic(string address)
         {
             var ifaces = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+            NetworkInterface preferredInterface = null;
+            
             foreach (var iface in ifaces)
             {
-                // 
+                // Skip loopback and down interfaces
+                if (iface.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Loopback || 
+                    iface.OperationalStatus != OperationalStatus.Up)
+                {
+                    continue;
+                }
+                
                 var ipProperties = iface.GetIPProperties();
                 foreach (var ip in ipProperties.UnicastAddresses)
                 {
-                    if ((iface.NetworkInterfaceType != System.Net.NetworkInformation.NetworkInterfaceType.Loopback) && (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork))
+                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                     {
-                        if (address == "0.0.0.0")
+                        if (address != "0.0.0.0")
                         {
-                            this.iface = iface;
-                            return;
-                        }
-                        else
-                        {
+                            // If a specific address is requested, use that interface
                             if (address == ip.Address.ToString())
                             {
                                 this.iface = iface;
                                 return;
                             }
                         }
+                        else
+                        {
+                            // For "0.0.0.0", prefer physical interfaces over virtual ones
+                            // Prioritize Ethernet interfaces, avoid Docker bridge interfaces
+                            if (iface.NetworkInterfaceType == NetworkInterfaceType.Ethernet &&
+                                !iface.Name.ToLower().Contains("bridge") &&
+                                !iface.Name.ToLower().Contains("docker") &&
+                                !iface.Name.ToLower().Contains("veth"))
+                            {
+                                this.iface = iface;
+                                return;
+                            }
+                            
+                            // Fallback: store the first suitable interface if no Ethernet is found
+                            if (preferredInterface == null &&
+                                !iface.Name.ToLower().Contains("bridge") &&
+                                !iface.Name.ToLower().Contains("docker") &&
+                                !iface.Name.ToLower().Contains("veth"))
+                            {
+                                preferredInterface = iface;
+                            }
+                        }
                     }
                 }
+            }
+            
+            // If no Ethernet interface was found but we have a preferred interface, use it
+            if (this.iface == null && preferredInterface != null)
+            {
+                this.iface = preferredInterface;
+            }
+            
+            // Log the selected interface for debugging
+            if (this.iface != null)
+            {
+                var selectedIp = this.GetIpInfo()?.Address?.ToString() ?? "Unknown";
+                Console.WriteLine($"Selected network interface: {this.iface.Name} ({selectedIp})");
+            }
+            else
+            {
+                Console.WriteLine("Warning: No suitable network interface found!");
             }
         }
 
