@@ -9,7 +9,7 @@
 	</property>
 	<property>
 		<register>Device_version</register>
-		<string>v1.0.0</string>
+		<string>1.14</string>
 	</property>
 	<property>
 		<register>Manufacturer_specific_information</register>
@@ -17,11 +17,11 @@
 	</property>
 	<property>
 		<register>Serial_number</register>
-		<string>0123456789</string>
+		<string>CAM-01</string>
 	</property>
 	<property>
 		<register>User_defined_name</register>
-		<string>This is the best cam the money can buy</string>
+		<string>1.14</string>
 	</property>
 	<property>
 		<register>XML_Device_Description_File_Second_URL</register>
